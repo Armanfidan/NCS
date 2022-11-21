@@ -10,50 +10,55 @@ import matplotlib; matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.animation import FuncAnimation
-from itertools import count
+from functools import reduce
+import multiprocessing
 
 
-def run(exchange: Exchange, duration: int = 1000, trader: Trader = None, buy_limit: int = None, sell_limit: int = None):
+def run(exchange: Exchange, duration: int = 50, trader: Trader = None, buy_limit: int = None, sell_limit: int = None):
     buys = []
     sells = []
 
-    fig = plt.figure()
-    axes = plt.axes(xlim=(-108, -104), ylim=(31, 34))
-    line, = axes.plot([], [], lw=2)
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-
-    # axes.title("Stock prices in the {}".format(exchange.get_name()))
-    # axes.xlabel("Time (units)")
-    # axes.ylabel("Stock prices ({})".format(exchange.get_currency()))
-    # axes.legend()
-
-    # plt.style.use("ggplot")
-    x = []
-    x_var = count(0, duration)
-    x.append(next(x_var))
-
-    def init():
-        for line in lines:
-            line.set_data([], [])
-        return lines
-
-    lines = []
-    for index in range(len(exchange.get_stocks())):
-        lobj = axes.plot([], [], lw=2)[0]
-        lines.append(lobj)
-
-    def animate(i):
+    def simulate():
+        fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
+    
+        plt.xlabel("Time (units)")
+        plt.ylabel("Stock prices ({})".format(exchange.get_currency()))
+        plt.title("Stock prices in the {}".format(exchange.get_name()))
+    
+        x = []
+        x_var = iter(range(duration))
         x.append(next(x_var))
-        exchange.update_all()
-        y = list(exchange.get_all_histories().values())
-        print(len(x), list(map(len, exchange.get_all_histories().values())))
-        for lnum, line in enumerate(lines):
-            line.set_data(x, y[lnum])
-        return lines
+    
+        lines = []
+        for index in range(len(exchange.get_stocks())):
+            lobj = axes.plot([], [], lw=2)[0]
+            lines.append(lobj)
+        
+        def animate(i):
+            try:
+                x.append(next(x_var))
+                exchange.update_all()
+            except StopIteration:
+                return lines
+            y: list = list(exchange.get_all_histories().values())
+            for lnum, line in enumerate(lines):
+                line.set_data(x, y[lnum])
+                _max = reduce(max, reduce(lambda a, b: a + b, y))
+            axes.set_xlim(0, len(x))
+            axes.set_ylim(-5, _max + 5)
+            return lines
+    
+        
+        anim = FuncAnimation(fig, animate, interval=100, frames=duration)
+        plt.show()
 
-    anim = FuncAnimation(fig, animate, 100, init_func=init, interval=100, blit=True)
-    plt.show()
+    p = multiprocessing.Process(target=simulate)
+    print(exchange.get_all_histories())
+    p.start()
+    time.sleep(5)
+    print(exchange.get_all_histories())
+
+    print("End of simulation: time =", duration)
 
 
 def main():
@@ -72,7 +77,7 @@ def main():
           .format(trader.get_name(), nyse.get_name(), ', '.join(list(map(str, nyse.get_stocks())))))
 
     # Exercise 1: Run the main function, implement the method missing and see how the stock prices change!
-    run(nyse, duration=50)
+    run(nyse)
 
     # Exercise 2: Try adding a new exchange, then research some tickers and experiment with adding new stocks.
     # Question:   What happens when you try to trade the stock on the wrong exchange, or use a different currency than
