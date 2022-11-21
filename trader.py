@@ -20,6 +20,7 @@ class Trader:
         """
         :return: The trader's name.
         """
+        return self.__name
 
     def get_balance(self):
         """

@@ -34,8 +34,12 @@ class Stock:
         """
         :return: The stock's currency.
         """
+        return self.__currency
 
     def get_ticker(self):
         """
         :return: The stock's short code.
         """
+
+    def __str__(self) -> str:
+        return "{} ({})".format(self.__name, self.__ticker)

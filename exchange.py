@@ -12,6 +12,9 @@ class Exchange:
     def get_name(self):
         return self.__name
 
+    def get_currency(self):
+        return self.__currency
+
     def add_stock(self, stock: Stock):
         if not stock.get_currency():
             print("Have you forgotten to implement the Stock.get_currency() method?")
