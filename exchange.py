@@ -43,7 +43,7 @@ class Exchange:
         return self.__stocks_and_prices
 
     def get_stocks(self):
-        return self.__stocks_and_prices.keys()
+        return list(self.__stocks_and_prices.keys())
 
     def get_time_average(self, stock):
         """
