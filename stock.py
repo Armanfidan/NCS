@@ -5,6 +5,7 @@ class Stock:
     """
     The Stock class, representing a very simplified stock that can only be traded on one exchange and in one currency.
     """
+
     def __init__(self, name: str, currency: str, ticker: str):
         self.__name: str = name
         self.__currency: str = currency
@@ -34,7 +35,6 @@ class Stock:
         """
         :return: The stock's currency.
         """
-        return self.__currency
 
     def get_ticker(self):
         """
